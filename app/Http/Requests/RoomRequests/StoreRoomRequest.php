@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\RoomRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -28,7 +28,7 @@ class StoreRoomRequest extends FormRequest
             'capacity' => 'required|integer',
             'description' => 'nullable|text',
             'imagePath' => 'nullable|string',
-            'available' => 'required|boolean',
+            'available' => 'boolean',
         ];
     }
 }
