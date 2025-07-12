@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Treits\HttpResponses;
+use App\Traits\HttpResponses;
 use App\Http\Requests\StoreUserRequest;
 use App\Models\User; // Assuming you have a User model
 use App\Http\Resources\UserResource;
