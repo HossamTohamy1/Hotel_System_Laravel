@@ -14,7 +14,10 @@ class UserController extends Controller
     {
         $this->userService = $userService;
     }
-
+    public function index()
+    {
+        return $this->userService->getAllUsers();
+    }
     public function store(StoreUserRequest $request)
     {
         return $this->userService->store($request);
