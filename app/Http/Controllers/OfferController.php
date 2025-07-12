@@ -2,64 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\offer;
+use App\Http\Requests\StoreOfferRequest;
+use App\Http\Resources\OfferResource;
+use App\Services\OfferService;
 use Illuminate\Http\Request;
 
 class OfferController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected OfferService $offerService;
+
+    public function __construct(OfferService $offerService)
     {
-        //
+        $this->offerService = $offerService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreOfferRequest $request)
     {
-        //
+      return  $this->offerService->createOffer($request);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(offer $offer)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(offer $offer)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, offer $offer)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(offer $offer)
-    {
-        //
-    }
+   
 }

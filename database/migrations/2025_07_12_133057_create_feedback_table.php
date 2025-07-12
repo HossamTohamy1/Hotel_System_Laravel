@@ -17,6 +17,7 @@ return new class extends Migration
                 $table->foreignId('reservation_id')->constrained();
                 $table->integer('rating');
                 $table->text('comments');
+                $table->boolean('is_deleted')->default(false);
                 $table->timestamps();
         });
     }
