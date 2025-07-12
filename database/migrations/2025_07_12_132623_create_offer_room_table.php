@@ -15,6 +15,7 @@ return new class extends Migration
               $table->id();
               $table->foreignId('offer_id')->onDelete('cascade');
               $table->foreignId('room_id')->onDelete('cascade');
+              $table->boolean('is_deleted')->default(false);
               $table->timestamps();
         });
     }

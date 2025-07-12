@@ -15,6 +15,7 @@ return new class extends Migration
            $table->id();
            $table->foreignId('room_id')->constrained();
            $table->foreignId('facility_id')->constrained();
+           $table->boolean('is_deleted')->default(false);
            $table->timestamps();
         });
     }

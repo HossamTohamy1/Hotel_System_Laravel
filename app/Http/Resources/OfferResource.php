@@ -21,7 +21,7 @@ class OfferResource extends JsonResource
             'start_date' => $this->start_date,
             'end_date'   => $this->end_date,
             'discount'   => $this->discount,
-            'rooms'      => RoomResource::collection(resource: $this->whenLoaded('rooms')),
+            'rooms'      => RoomResource::collection($this->rooms),
             'created_at' => $this->created_at,
         ];
     }
