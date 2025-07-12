@@ -27,7 +27,7 @@ class StoreOfferRequest extends FormRequest
             'discount_percentage' => 'required|numeric|min:0|max:100',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'room_ids' => 'required|array|exists:rooms,id',
+            'room_numbers' => 'required|array|exists:rooms,room_number',
             // 'room_ids.*' => 'exists:rooms,id',
         ];
     }

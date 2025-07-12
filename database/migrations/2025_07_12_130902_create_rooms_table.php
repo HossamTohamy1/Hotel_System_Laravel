@@ -20,6 +20,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('imagePath')->nullable();
             $table->boolean('available')->default(true); 
+            $table->boolean('is_deleted')->default(false);
             $table->timestamps();
         });
     }

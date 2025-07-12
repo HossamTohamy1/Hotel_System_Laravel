@@ -1,19 +1,21 @@
 <?php
 
 namespace App\Services;
-
+use App\Http\Resources\OfferResource;
 use App\Models\Offer;
+use App\Models\Room;
 
+use App\Traits\HttpResponses;
 class OfferService
 {
-    public function createOffer(array $data): Offer
+    use HttpResponses;
+    public function createOffer( $data)
     {
-        $roomIds = $data['room_ids'] ?? [];
-        unset($data['room_ids']);
 
-        $offer = Offer::create($data);
+        $offer = Offer::create($data->validated());
+        $roomNumbers = $data->get('room_numbers') ?? [];
+        $roomIds = Room::whereIn('room_number', $roomNumbers)->pluck('id')->toArray();
         $offer->rooms()->sync($roomIds);
-
-        return $offer->load('rooms');
+        return $this->Success(OfferResource::make($offer), 'Offer created successfully', 201);
     }
 }

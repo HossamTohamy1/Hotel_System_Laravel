@@ -18,11 +18,7 @@ class OfferController extends Controller
 
     public function store(StoreOfferRequest $request)
     {
-        $data = $request->validated();
-
-        $offer = $this->offerService->createOffer($data);
-
-        return new OfferResource($offer);
+      return  $this->offerService->createOffer($request);
     }
 
    
