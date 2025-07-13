@@ -71,18 +71,18 @@ class Handler extends ExceptionHandler
             }
 
             // Query/database error
-            if ($exception instanceof QueryException) {
-                return response()->json([
-                    'status' => false,
-                    'message' => config('app.debug') ? $exception->getMessage() : 'A database error occurred.',
-                ], 500);
-            }
+            // if ($exception instanceof QueryException) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'message' => config('app.debug') ? $exception->getMessage() : 'A database error occurred.',
+            //     ], 500);
+            // }
 
-            // Fallback for other unexpected exceptions
-            return response()->json([
-                'status' => false,
-                'message' => config('app.debug') ? $exception->getMessage() : 'An unexpected error occurred.',
-            ], 500);
+            // // Fallback for other unexpected exceptions
+            // return response()->json([
+            //     'status' => false,
+            //     'message' => config('app.debug') ? $exception->getMessage() : 'An unexpected error occurred.',
+            // ], 500);
         }
 
         return parent::render($request, $exception);

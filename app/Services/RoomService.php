@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Traits\HttpResponses;
+use App\Traits\HasGlobalScope;
 use App\Http\Resources\RoomResource;
 use App\Models\Room;
 use App\Exceptions\BusinessLogicException;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class RoomService
 {
-    use HttpResponses;
+    use HttpResponses,HasGlobalScope;
 
     public function __construct()
     {
@@ -25,31 +26,19 @@ class RoomService
 
     public function store($request)
     {
-        try {
-                $room = Room::create($request->validated());    
-                if (!$room) {
-                    throw new BusinessLogicException('Failed to create the room.');
-                }    
-                return $this->Success(RoomResource::make($room), 'Room created successfully', 201);    
-              } 
         
-        catch (\Illuminate\Database\QueryException $e)
-         {
-            if (str_contains($e->getMessage(), 'room_number')) {
-                throw new BusinessLogicException('This room number already exists.');
-            }       
-            
-            throw new BusinessLogicException('A database error occurred while creating the room.');
-            
-        } catch (\Exception $e) {
-            throw new BusinessLogicException('Unexpected error while creating room: ' . $e->getMessage());
-        }
+                $room = Room::create($request->validated());  
+                return $this->Success(RoomResource::make($room), 'Room created successfully', 201);    
+              
     }       
 
 
     public function getRoomById($id)
     {
-       $room = Room::findOrFail($id);
+       $room = $this->getById(Room::class, $id);
+        if (!$room) {
+            return $this->Error(null,'Room not found', 404);
+        }
         return $this->Success(RoomResource::make($room), 'Room retrieved successfully');
     }
 

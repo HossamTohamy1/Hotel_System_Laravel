@@ -5,6 +5,8 @@ use App\Http\Requests\RoomRequests\StoreRoomRequest;
 use App\Http\Requests\RoomRequests\UpdateRoomRequest;
 use Illuminate\Http\Request;
 use App\Services\RoomService;
+use App\Models\Room;
+
 
 class RoomController extends Controller
 {
