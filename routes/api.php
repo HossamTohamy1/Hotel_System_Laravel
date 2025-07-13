@@ -27,5 +27,5 @@ Route::put('/room/{id}', [App\Http\Controllers\RoomController::class, 'update'])
 //     return $request->user();
 // })->middleware('auth:sanctum');
 Route::post('/offers', [App\Http\Controllers\OfferController::class, 'store'])->name('offers.store');
-
+route::put('/offers/{id}', [App\Http\Controllers\OfferController::class, 'update'])->name('offers.update');
 

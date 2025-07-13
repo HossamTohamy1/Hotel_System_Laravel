@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\RoomRequests;
+namespace App\Http\Requests\OfferRequests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreRoomRequest extends FormRequest
+class UpdateOfferRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,13 +22,13 @@ class StoreRoomRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'room_type' => 'required|string',
-            'room_number' => 'required|string',
-            'price_per_night' => 'required|numeric',
-            'capacity' => 'required|integer',
+            'name' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
-            'imagePath' => 'nullable|string',
-            'available' => 'boolean',
+            'discount_percentage' => 'sometimes|required|numeric|min:0|max:100',
+            'start_date' => 'sometimes|required|date',
+            'end_date' => 'sometimes|required|date|after_or_equal:start_date',
+            'room_numbers' => 'sometimes|required|array|exists:rooms,room_number',
+            
         ];
     }
 }
