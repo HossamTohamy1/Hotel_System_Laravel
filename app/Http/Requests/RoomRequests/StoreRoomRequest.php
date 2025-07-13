@@ -23,7 +23,7 @@ class StoreRoomRequest extends FormRequest
     {
         return [
             'room_type' => 'required|string',
-            'room_number' => 'required|string',
+            'room_number' => 'required|string|unique:rooms,room_number',
             'price_per_night' => 'required|numeric',
             'capacity' => 'required|integer',
             'description' => 'nullable|string',

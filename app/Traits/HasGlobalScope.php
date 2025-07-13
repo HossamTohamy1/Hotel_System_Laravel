@@ -10,5 +10,8 @@ trait HasGlobalScope
     {
         static::addGlobalScope(new GlobalScope);
     }
-    
+    public function getById($model,$id)
+    {
+        return $model::find($id);
+    }
 }
