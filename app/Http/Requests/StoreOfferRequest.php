@@ -28,7 +28,6 @@ class StoreOfferRequest extends FormRequest
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'room_numbers' => 'required|array|exists:rooms,room_number',
-            // 'room_ids.*' => 'exists:rooms,id',
         ];
     }
 }
