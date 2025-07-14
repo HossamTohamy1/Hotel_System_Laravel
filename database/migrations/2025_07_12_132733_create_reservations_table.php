@@ -21,7 +21,7 @@ return new class extends Migration
              $table->integer('number_of_guests');
              $table->decimal('total_amount', 10, 2);
              $table->enum('status', ['pending', 'confirmed', 'cancelled', 'completed'])->default('pending');
-             $table->boolean('is_deleted')->default(false);
+              $table->softDeletes();
              $table->timestamps();
         });
     }

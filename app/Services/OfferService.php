@@ -38,6 +38,12 @@ class OfferService
     {
        
             $offer = Offer::find($id);
+
+            if(!$offer)
+            {
+                return $this->Error(null , 'offer Id Not Found',404);
+            }
+
             $offer->update($data->validated());
 
             $roomNumbers = $data->get('room_numbers') ?? [];
@@ -58,4 +64,15 @@ class OfferService
 
        
     }
+    
+    public function deleteOffer($id)
+       {
+           $offer = Offer::find($id);
+           if (!$offer) {
+               return $this->Error(null, 'Offer not found', 404);
+           }
+           $offer->delete();
+           return $this->Success(null, 'Offer deleted successfully', 200);
+
+       }
 }

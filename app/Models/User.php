@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Traits\HasGlobalScope; // Assuming you have a trait for global scopes
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
@@ -46,4 +47,5 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+     use SoftDeletes;
 }

@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\TransactionMiddleware;
 
 
 
@@ -28,4 +29,8 @@ Route::put('/room/{id}', [App\Http\Controllers\RoomController::class, 'update'])
 // })->middleware('auth:sanctum');
 Route::post('/offers', [App\Http\Controllers\OfferController::class, 'store'])->name('offers.store');
 route::put('/offers/{id}', [App\Http\Controllers\OfferController::class, 'update'])->name('offers.update');
+Route::delete('/offers/{id}', [App\Http\Controllers\OfferController::class, 'destroy'])->name('offers.destroy');
+
+Route::post('/reservations', [App\Http\Controllers\ReservationController::class, 'store'])
+    ->name('reservations.store');
 

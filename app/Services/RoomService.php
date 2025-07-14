@@ -55,4 +55,15 @@ class RoomService
 
         return $this->Success(RoomResource::make($room), 'Room updated successfully');
     }
+    public function deleteRoom($id)
+    {
+        $room =Room::Find($id);
+        if(!$room)
+        {
+            return $this->Error(null, 'Room not found', 404);
+        }
+        $room->delete();
+        return $this->Success(null, 'Room deleted successfully', 204);
+
+    }
 }
