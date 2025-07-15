@@ -4,6 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\OfferController;
+use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\FeedbackController;
+
 
 Route::get('/test', function () {
     return [
@@ -11,21 +17,33 @@ Route::get('/test', function () {
         'status' => 'success'
         ];
 });
+Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
 
-Route::post('/user', [App\Http\Controllers\UserController::class, 'store'])->name('user.store');
-Route::get('/user', [App\Http\Controllers\UserController::class, 'index'])->name('user.index');
-Route::get('/user/{id}', [App\Http\Controllers\UserController::class, 'show'])->name('user.show');
-
-Route::post('/room', [App\Http\Controllers\RoomController::class, 'store'])->name('room.store');
-Route::get('/room', [App\Http\Controllers\RoomController::class, 'index'])->name('room.index');
-Route::get('/room/{id}', [App\Http\Controllers\RoomController::class, 'show'])->name('room.show');
-Route::put('/room/{id}', [App\Http\Controllers\RoomController::class, 'update'])->name('room.update');
+Route::middleware('auth:api')->group(function () {
+    Route::get('profile', [AuthController::class, 'profile']);
+    Route::post('logout', [AuthController::class, 'logout']);
 
 
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
-Route::post('/offers', [App\Http\Controllers\OfferController::class, 'store'])->name('offers.store');
+
+    Route::post('/room', [RoomController::class, 'store'])->name('room.store');
+    Route::get('/room', [RoomController::class, 'index'])->name('room.index');
+    Route::get('/room/{id}', [RoomController::class, 'show'])->name('room.show');
+    Route::put('/room/{id}', [RoomController::class, 'update'])->name('room.update');
 
 
+
+    Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
+    route::put('/offers/{id}', [OfferController::class, 'update'])->name('offers.update');
+    Route::delete('/offers/{id}', [OfferController::class, 'destroy'])->name('offers.destroy');
+
+    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::post('/update-room-availability', [RoomController::class, 'updateAvailability']);
+    Route::put('/reservations/{id}', [ReservationController::class, 'update']);
+
+    Route::patch('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
+    Route::get('/reservations/room/{room_number}', [ReservationController::class, 'showByRoomNumber']);
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
+});

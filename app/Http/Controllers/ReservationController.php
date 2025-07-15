@@ -1,65 +1,46 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Services\ReservationService;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use App\Http\Requests\ReservationRequests\StoreReservationRequest;
+use App\Http\Requests\ReservationRequests\UpdateReservationRequest;
+use Illuminate\Http\JsonResponse;
 
 class ReservationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        //
-    }
+      protected $reservationService;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function __construct(ReservationService $reservationService)
     {
-        //
+        $this->reservationService = $reservationService;
     }
+  
+     public function store(StoreReservationRequest $request)
+   {
+    return $this->reservationService->makeReservation($request->validated());
+   }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Reservation $reservation)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Reservation $reservation)
-    {
-        //
-    }
+  
+    public function update(UpdateReservationRequest $request, $id)
+  {
+    return $this->reservationService->updateReservation($id, $request->validated());
+  }
+  public function cancel($id): JsonResponse
+{
+    return $this->reservationService->cancelReservation($id);
+}
+public function showByRoomNumber($roomNumber)
+{
+    return $this->reservationService->getReservationByRoomNumber($roomNumber);
+}
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Reservation $reservation)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Reservation $reservation)
-    {
-        //
-    }
+  
 }
