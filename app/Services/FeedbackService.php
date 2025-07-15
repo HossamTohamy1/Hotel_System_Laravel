@@ -14,7 +14,11 @@ class FeedbackService
 
     public function store(array $data)
     {
-        $reservation = Reservation::findOrFail($data['reservation_id']);
+        $reservation = Reservation::find($data['reservation_id']);
+        
+        if (!$reservation) {
+            return $this->Error(null, 'Reservation not found.', 404);
+        }
 
         if ($reservation->feedback) {
             return $this->Error(null, 'Feedback already submitted for this reservation.', 409);
