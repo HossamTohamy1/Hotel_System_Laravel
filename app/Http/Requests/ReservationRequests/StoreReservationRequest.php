@@ -17,10 +17,14 @@ class StoreReservationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id'        => 'required|exists:users,id',
-            'reservation_id' => 'required|exists:reservations,id',
-            'rating'         => 'required|integer|min:1|max:5',
-            'comments'       => 'nullable|string|max:1000',
+            'user_id'           => 'required|exists:users,id',
+            'room_id'           => 'required|exists:rooms,id',
+            'offer_id'          => 'nullable|exists:offers,id',
+            'check_in_date'     => 'required|date|after_or_equal:today',
+            'check_out_date'    => 'required|date|after:check_in_date',
+            'number_of_guests'  => 'nullable|integer|min:1',
+            'total_amount'      => 'numeric|min:0',
+            'status'            => 'in:pending,confirmed,cancelled,completed',
         ];
     }
 }
