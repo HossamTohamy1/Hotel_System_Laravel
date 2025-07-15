@@ -11,7 +11,7 @@ class StoreFeedbackRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,11 @@ class StoreFeedbackRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
+      return [
+            'user_id' => 'required|exists:users,id',
+            'reservation_id' => 'required|exists:reservations,id',
+            'rating' => 'required|integer|min:1|max:5',
+            'comments' => 'nullable|string|max:1000',
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\FeedbackController;
 
 
 Route::get('/test', function () {
@@ -22,7 +23,6 @@ Route::post('register', [AuthController::class, 'register']);
 Route::middleware('auth:api')->group(function () {
     Route::get('profile', [AuthController::class, 'profile']);
     Route::post('logout', [AuthController::class, 'logout']);
-
 
 
 
@@ -44,4 +44,6 @@ Route::middleware('auth:api')->group(function () {
 
     Route::patch('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
     Route::get('/reservations/room/{room_number}', [ReservationController::class, 'showByRoomNumber']);
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
 });
