@@ -16,12 +16,16 @@ class ReservationService
     public function makeReservation(array $data)
     {
         return DB::transaction(function () use ($data) {
-            $room = Room::findOrFail($data['room_id']);
+            $room = Room::find($data['room_id']);
 
-             $overlap = Reservation::where('room_id', $room->id)
-                    ->whereIn('status', ['pending', 'confirmed'])
-                    ->where(function ($query) use ($data) {
-                        $query->where('check_in_date', '<', $data['check_out_date'])
+            if (!$room) {
+                return $this->Error(null, "Room not found.", 404);
+            }
+
+            $overlap = Reservation::where('room_id', $room->id)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->where(function ($query) use ($data) {
+                    $query->where('check_in_date', '<', $data['check_out_date'])
                               ->where('check_out_date', '>', $data['check_in_date']);
                     })->exists();
 
@@ -37,7 +41,10 @@ class ReservationService
             $pricePerNight = $room->price_per_night;
 
             if (!empty($data['offer_id'])) {
-                $offer = Offer::findOrFail($data['offer_id']);
+                $offer = Offer::find($data['offer_id']);
+                if (!$offer || !$offer->rooms->contains($room->id)) {
+                    return $this->Error(null, "Selected offer is not valid for this room.", 400);
+                }
 
                 if (!$offer->rooms->contains($room->id)) {
                     return $this->Error(null, "Selected offer is not valid for this room.", 400);
@@ -73,8 +80,10 @@ class ReservationService
 
     public function updateReservation($id, array $data)
     {
-        $reservation = Reservation::findOrFail($id);
-
+        $reservation = Reservation::find($id);
+        if (!$reservation) {
+            return $this->Error(null, 'Reservation not found.', 404);
+        }
         if (!in_array($reservation->status, ['pending', 'confirmed'])) {
             return $this->Error(null, 'Cannot edit a reservation that is completed or cancelled.', 400);
         }
@@ -97,7 +106,11 @@ class ReservationService
             return $this->Error(null, 'Room not available for the new dates.', 400);
         }
 
-        $room = Room::findOrFail($newRoomId);
+        $room = Room::find($newRoomId);
+        if (!$room) {
+            return $this->Error(null, "Room not found.", 404);
+        }
+
         $nights = Carbon::parse($checkOut)->diffInDays(Carbon::parse($checkIn));
         $pricePerNight = $room->price_per_night;
 
@@ -133,8 +146,11 @@ class ReservationService
     }
 
     public function cancelReservation($id)
-{
-    $reservation = Reservation::findOrFail($id);
+    {
+    $reservation = Reservation::find($id)->select( 'status')->first();
+    if (!$reservation) {
+        return $this->Error(null, 'Reservation not found.', 404);
+    }
 
     if (!in_array($reservation->status, ['pending'])) {
         return $this->Error(null, 'Only pending reservations can be cancelled.', 400);
