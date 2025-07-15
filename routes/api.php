@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\FeedbackController;
 
 
 Route::get('/test', function () {
@@ -26,19 +27,11 @@ Route::middleware('auth:api')->group(function () {
 
 
 
-<<<<<<< Updated upstream
-=======
-Route::post('/offers', [App\Http\Controllers\OfferController::class, 'store'])->name('offers.store');
-Route::put('/offers/{id}', [App\Http\Controllers\OfferController::class, 'update'])->name('offers.update');
-Route::delete('/offers/{id}', [App\Http\Controllers\OfferController::class, 'destroy'])->name('offers.destroy');
->>>>>>> Stashed changes
-
     Route::post('/room', [RoomController::class, 'store'])->name('room.store');
     Route::get('/room', [RoomController::class, 'index'])->name('room.index');
     Route::get('/room/{id}', [RoomController::class, 'show'])->name('room.show');
     Route::put('/room/{id}', [RoomController::class, 'update'])->name('room.update');
 
-<<<<<<< Updated upstream
 
 
     Route::post('/offers', [OfferController::class, 'store'])->name('offers.store');
@@ -51,9 +44,6 @@ Route::delete('/offers/{id}', [App\Http\Controllers\OfferController::class, 'des
 
     Route::patch('/reservations/{id}/cancel', [ReservationController::class, 'cancel']);
     Route::get('/reservations/room/{room_number}', [ReservationController::class, 'showByRoomNumber']);
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
+
 });
-=======
-Route::patch('/reservations/{id}/cancel', [App\Http\Controllers\ReservationController::class, 'cancel']);
-Route::get('/reservations/room/{room_number}', [App\Http\Controllers\ReservationController::class, 'showByRoomNumber']);
-Route::post('/feedback', [App\Http\Controllers\FeedbackController::class, 'store'])->name('feedback.store');
->>>>>>> Stashed changes
