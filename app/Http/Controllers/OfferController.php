@@ -20,10 +20,14 @@ class OfferController extends Controller
     {
       return  $this->offerService->createOffer($request);
     }
+
+
     public function update($id, UpdateOfferRequest $request)
     {
         return $this->offerService->updateOffer($id, $request);
     }
+
+    
     public function destroy($id)
     {
      return $this->offerService->deleteOffer($id);

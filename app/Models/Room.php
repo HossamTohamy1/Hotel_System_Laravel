@@ -20,5 +20,11 @@ class Room extends Model
 {
     return $this->belongsToMany(Offer::class, 'offer_room');
 }
+public function reservations()
+{
+    return $this->hasMany(Reservation::class);
+}
+
+
      use SoftDeletes;
 }

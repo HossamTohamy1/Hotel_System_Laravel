@@ -2,152 +2,168 @@
 
 namespace App\Services;
 
-use App\Models\Room;
-use App\Models\offer;
 use App\Models\Reservation;
-use App\Enums\ReservationStatus;
-use Error;
+use App\Models\Room;
+use App\Models\Offer;
 use Illuminate\Support\Facades\DB;
-use App\Traits\HttpResponses;
-
-use App\Http\Requests\ReservationRequests\StoreReservationRequest;
-use App\Http\Resources\ReservationResource;
 use Carbon\Carbon;
-use Illuminate\Validation\ValidationException;
-use PHPUnit\Framework\Attributes\Before;
+use App\Traits\HttpResponses;
 
 class ReservationService
 {
     use HttpResponses;
-    public function createReservation( $request)
-{
-    $data = $request->validated();
-    dd("Before");
-    return DB::transaction(function () use ($data) {
-        try {
-                dd("after Try");
 
+    public function makeReservation(array $data)
+    {
+        return DB::transaction(function () use ($data) {
             $room = Room::findOrFail($data['room_id']);
 
-            $this->validateRoomAvailability($room->id, $data['check_in_date'], $data['check_out_date']);
-
-            $this->validateGuestCapacity($room, $data['number_of_guests']);
-
-            $this->validateReservationDates($data['check_in_date'], $data['check_out_date']);
-
-            $totalPrice = $this->calculateTotalPrice($room, $data['check_in_date'], $data['check_out_date']);
-
-            $reservation = Reservation::create([
-                'user_id' => 1,
-                'room_id' => $room->id,
-                'check_in_date' => $data['check_in_date'],
-                'check_out_date' => $data['check_out_date'],
-                'number_of_guests' => $data['number_of_guests'],
-                'total_price' => $totalPrice,
-                'status' => ReservationStatus::PENDING,
-            ]);
-
-            $reservation->load(['room', 'user']);
+             $overlap = Reservation::where('room_id', $room->id)
+                    ->whereIn('status', ['pending', 'confirmed'])
+                    ->where(function ($query) use ($data) {
+                        $query->where('check_in_date', '<', $data['check_out_date'])
+                              ->where('check_out_date', '>', $data['check_in_date']);
+                    })->exists();
 
 
-            return $this->success(
-                ReservationResource::make($reservation),
-                'Reservation created successfully.',
-                201
-            );
+            if ($overlap) {
+                return $this->Error(null, "Room not available for the selected dates.", 400);
+            }
 
-        } catch (\Exception $e) {
-            return $this->error(
-                null,
-                $e->getMessage(),
-                500
-            );
+            $checkIn = Carbon::parse($data['check_in_date']);
+            $checkOut = Carbon::parse($data['check_out_date']);
+            $nights = $checkOut->diffInDays($checkIn);
+
+            $pricePerNight = $room->price_per_night;
+
+            if (!empty($data['offer_id'])) {
+                $offer = Offer::findOrFail($data['offer_id']);
+
+                if (!$offer->rooms->contains($room->id)) {
+                    return $this->Error(null, "Selected offer is not valid for this room.", 400);
+                }
+
+                $today = Carbon::today();
+                if ($today->lt(Carbon::parse($offer->start_date)) || $today->gt(Carbon::parse($offer->end_date))) {
+                    return $this->Error(null, "Offer is not valid at this time.", 400);
+                }
+
+                $discount = $offer->discount_percentage;
+                $pricePerNight -= ($pricePerNight * ($discount / 100)); 
+            }
+
+            $total = $pricePerNight * $nights;
+
+            $reservation = Reservation::create(array_merge(
+                $data,
+                [
+                    'room_id' => $room->id,
+                    'total_amount' => $total,
+                    'status' => 'pending',
+                ]
+            ));
+
+            $room->available = false;
+            $room->save();
+
+            return $this->Success($reservation, 'Reservation successful.', 201);
+        });
+    }
+
+
+    public function updateReservation($id, array $data)
+    {
+        $reservation = Reservation::findOrFail($id);
+
+        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
+            return $this->Error(null, 'Cannot edit a reservation that is completed or cancelled.', 400);
         }
-    }); 
-}
-private function calculateTotalPrice(Room $room, string $checkIn, string $checkOut): float
+
+        $newRoomId = $data['room_id'] ?? $reservation->room_id;
+        $checkIn = $data['check_in_date'] ?? $reservation->check_in_date;
+        $checkOut = $data['check_out_date'] ?? $reservation->check_out_date;
+
+
+      $overlap = Reservation::where('room_id', $newRoomId)
+             ->where('id', '!=', $reservation->id)
+             ->whereIn('status', ['pending', 'confirmed'])
+             ->where(function ($query) use ($checkIn, $checkOut) {
+                 $query->where('check_in_date', '<', $checkOut)
+                       ->where('check_out_date', '>', $checkIn);
+             })->exists();
+
+
+        if ($overlap) {
+            return $this->Error(null, 'Room not available for the new dates.', 400);
+        }
+
+        $room = Room::findOrFail($newRoomId);
+        $nights = Carbon::parse($checkOut)->diffInDays(Carbon::parse($checkIn));
+        $pricePerNight = $room->price_per_night;
+
+        if (!empty($data['offer_id'])) {
+            $offer = Offer::findOrFail($data['offer_id']);
+
+            if (!$offer->rooms->contains($room->id)) {
+                return $this->Error(null, 'Selected offer is not valid for this room.', 400);
+            }
+
+            $today = Carbon::today();
+            if ($today->lt(Carbon::parse($offer->start_date)) || $today->gt(Carbon::parse($offer->end_date))) {
+                return $this->Error(null, 'Offer is not valid at this time.', 400);
+            }
+
+            $discount = $offer->discount_percentage;
+            $pricePerNight -= ($pricePerNight * ($discount / 100));
+        }
+
+        $total = $pricePerNight * $nights;
+
+        $reservation->fill(array_merge(
+            $data,
+            [
+                'room_id' => $newRoomId,
+                'check_in_date' => $checkIn,
+                'check_out_date' => $checkOut,
+                'total_amount' => $total,
+            ]
+        ))->save();
+
+        return $this->Success($reservation, 'Reservation updated successfully.', 200);
+    }
+
+    public function cancelReservation($id)
 {
-    $checkInDate = Carbon::parse($checkIn);
-    $checkOutDate = Carbon::parse($checkOut);
-    $nights = $checkInDate->diffInDays($checkOutDate);
-    
-    $basePrice = $room->price_per_night * $nights;
-    
-      $activeOffer = $room->offers()
-        ->whereDate('start_date', '<=', now())
-        ->whereDate('end_date', '>=', now())
-        ->first();
+    $reservation = Reservation::findOrFail($id);
 
-    $discount = $activeOffer?->discount_percentage ?? 0;
+    if (!in_array($reservation->status, ['pending'])) {
+        return $this->Error(null, 'Only pending reservations can be cancelled.', 400);
+    }
 
-  $discountAmount = $basePrice * ($discount / 100);
-  $totalPrice = $basePrice - $discountAmount;
-  
-  return round($totalPrice, 2);
+    $reservation->status = 'cancelled';
+    $reservation->save();
+
+    $room = $reservation->room; 
+    $room->available = true;
+    $room->save();
+
+    return $this->Success($reservation, 'Reservation cancelled successfully.', 200);
 }
-private function validateReservationDates(string $checkIn, string $checkOut): ?\Illuminate\Http\JsonResponse
+public function getReservationByRoomNumber(string $roomNumber)
 {
-    $checkInDate = Carbon::parse($checkIn);
-    $checkOutDate = Carbon::parse($checkOut);
+    $reservation = Reservation::whereHas('room', function ($query) use ($roomNumber) {
+    $query->where('room_number', $roomNumber);
+                 })
+                  ->latest()
+                  ->first();
 
-    if ($checkInDate->isPast()) {
-        return $this->Error(null, 'Check-in date cannot be in the past.', 422);
+
+    if (!$reservation) {
+        return $this->Error(null, 'Reservation not found for this room number.', 404);
     }
 
-    if ($checkOutDate->isBefore($checkInDate)) {
-        return $this->Error(null, 'Check-out date must be after check-in date.', 422);
-    }
-
-    if ($checkInDate->isSameDay($checkOutDate)) {
-        return $this->Error(null, 'Check-out date must be at least one day after check-in date.', 422);
-    }
-
-    if ($checkInDate->diffInDays($checkOutDate) > 30) {
-        return $this->Error(null, 'Maximum reservation length is 30 days.', 422);
-    }
-
-    return null; 
+    return $this->Success($reservation, 'Reservation details retrieved successfully.');
 }
-private function validateRoomAvailability(int $roomId, string $checkIn, string $checkOut)
-{
-    $conflictingReservation = Reservation::where('room_id', $roomId)
-        ->where('status', '!=', ReservationStatus::CANCELLED->value)
-        ->where(function ($query) use ($checkIn, $checkOut) {
-            $query->where(function ($q) use ($checkIn, $checkOut) {
-                $q->where('check_in_date', '<', $checkOut)
-                  ->where('check_out_date', '>', $checkIn);
-            });
-        })
-        ->exists();
-
-    if ($conflictingReservation) {
-        return $this->Error(null, 'Room is not available for the selected dates.', 422);
-    }
-
-    return null;
-}
-
-private function validateGuestCapacity(Room $room, int $numberOfGuests)
-{
-    if ($numberOfGuests > $room->capacity) {
-        return $this->Error(
-            null,
-            "Number of guests ({$numberOfGuests}) exceeds room capacity ({$room->capacity}).",
-            422
-        );
-    }
-
-    if ($numberOfGuests <= 0) {
-        return $this->Error(
-            null,
-            'Number of guests must be at least 1.',
-            422
-        );
-    }
-
-    return null; 
-}
-
 
 
 }

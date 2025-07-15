@@ -27,10 +27,15 @@ Route::put('/room/{id}', [App\Http\Controllers\RoomController::class, 'update'])
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
 // })->middleware('auth:sanctum');
+
 Route::post('/offers', [App\Http\Controllers\OfferController::class, 'store'])->name('offers.store');
 route::put('/offers/{id}', [App\Http\Controllers\OfferController::class, 'update'])->name('offers.update');
 Route::delete('/offers/{id}', [App\Http\Controllers\OfferController::class, 'destroy'])->name('offers.destroy');
 
 Route::post('/reservations', [App\Http\Controllers\ReservationController::class, 'store'])
     ->name('reservations.store');
+Route::post('/update-room-availability', [App\Http\Controllers\RoomController::class, 'updateAvailability']);
+Route::put('/reservations/{id}', [App\Http\Controllers\ReservationController::class, 'update']);
 
+Route::patch('/reservations/{id}/cancel', [App\Http\Controllers\ReservationController::class, 'cancel']);
+Route::get('/reservations/room/{room_number}', [App\Http\Controllers\ReservationController::class, 'showByRoomNumber']);
